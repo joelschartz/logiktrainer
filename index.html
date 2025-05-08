@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Logiktrainer</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 90%;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #introAndHints {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+    #introduction, #hints {
+      background-color: white;
+      padding: 1rem 1.2rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #hints ul {
+      padding-left: 1.2rem;
+    }
+
+    #hints li {
+      margin-bottom: 0.5rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      background: white;
+      width: 100%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0;
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 13px;
+    }
+th.rotated-left {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.3rem;
+  background-color: #e0e0e0;
+  font-size: 13px;
+  height: auto;
+}
+
+
+th.rotated {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding: 0.5rem;
+  white-space: nowrap;
+  height: 120px;
+  background-color: #f3f3f3;
+  font-size: 13px; /* Standardgröße beibehalten */
+}
+
+    td[data-clickable] {
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    td[data-clickable]:hover {
+      background-color: #def;
+    }
+
+    td[data-state="1"] {
+      background-color: #8f8;
+    }
+
+    td[data-state="0"] {
+      background-color: #f88;
+    }
+
+    td[style*="border: none"] {
+      background-color: #f5f5f5 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="inputSection">
+      <h1>Logiktrainer</h1>
+      <p>Füge hier dein Rätsel ein (mit Einleitung, Hinweisen und Kategorien):</p>
+      <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...&#10;&#10;Hinweise:&#10;1. Hinweis...&#10;&#10;Kategorien:&#10;Kategorie;Element1,Element2,Element3"></textarea>
+      <button onclick="generateMatrix()">Rätsel erstellen</button>
+    </div>
+
+    <div id="introAndHints" style="display: none;">
+      <div id="introduction"><h2>Einleitung</h2><p id="storyText"></p></div>
+      <div id="hints"><h2>Hinweise</h2><ul id="hintsList"></ul></div>
+    </div>
+
+    <div id="matrixContainer"></div>
+  </div>
+
+  <script>
+    function generateMatrix() {
+      const input = document.getElementById('csvInput').value.trim();
+
+      const storyMatch = input.match(/Einleitungsgeschichte:\s*(.+?)\s*(Hinweise:|$)/s);
+      const story = storyMatch ? storyMatch[1].trim() : '';
+
+      const hintMatch = input.match(/Hinweise:\s*((?:\d+\..*?\n?)*)\s*Kategorien:/s);
+      const hints = hintMatch ? hintMatch[1].trim().split(/\n+/).map(h => h.replace(/^\d+\.\s*/, '')) : [];
+
+      const categoryMatch = input.match(/Kategorien:\s*((?:.+\n?)+)/);
+      const categoryLines = categoryMatch ? categoryMatch[1].trim().split('\n') : [];
+
+const data = categoryLines.map(line => {
+  const [category, elementsRaw] = line.split(';');
+  return {
+    category: category.trim(),
+    elements: elementsRaw.split(',').map(e => e.trim())
+  };
+});
+
+      if (data.length !== 4 || !data.every(d => d.elements.length === 3)) {
+        alert("Bitte genau 4 Kategorien mit je 3 Elementen eingeben.");
+        return;
+      }
+
+      const [cat1, cat2, cat3, cat4] = data;
+      const rowLabels = [...cat1.elements, ...cat4.elements, ...cat3.elements];
+      const colLabels = [...cat2.elements, ...cat3.elements, ...cat4.elements];
+
+      let html = '<table><thead>';
+html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
+      [cat2.category, cat3.category, cat4.category].forEach(category => {
+        html += `<th colspan="3" style="background-color: #e0e0e0; font-weight: normal;">${category}</th>`;
+      });
+      html += '</tr><tr>';
+      colLabels.forEach(label => {
+        html += `<th class="rotated">${label}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      rowLabels.forEach((label, rowIndex) => {
+        if (rowIndex % 3 === 0) {
+          const groupName = [cat1.category, cat4.category, cat3.category][Math.floor(rowIndex / 3)];
+html += `<tr><th rowspan="3" class="rotated-left">${groupName}</th>`;
+        } else {
+          html += '<tr>';
+        }
+
+        html += `<th style="background-color: #f3f3f3;">${label}</th>`;
+
+        colLabels.forEach((_, colIndex) => {
+          if (
+            (rowIndex >= 3 && rowIndex <= 5 && colIndex >= 6 && colIndex <= 8) ||
+            (rowIndex >= 6 && rowIndex <= 8 && colIndex >= 3 && colIndex <= 8)
+          ) {
+            html += '<td style="border: none; background-color: #f5f5f5;"></td>';
+          } else {
+            const top = (rowIndex % 3 === 0) ? '3px' : '1px';
+            const left = (colIndex % 3 === 0) ? '3px' : '1px';
+            const right = (colIndex % 3 === 2) ? '3px' : '1px';
+            const bottom = (rowIndex % 3 === 2) ? '3px' : '1px';
+            html += `<td data-clickable data-state="" onclick="toggleCell(this)" style="
+              border-top: ${top} solid black;
+              border-left: ${left} solid black;
+              border-right: ${right} solid black;
+              border-bottom: ${bottom} solid black;
+              width: 30px; height: 40px;"></td>`;
+          }
+        });
+
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('storyText').textContent = story;
+      document.getElementById('hintsList').innerHTML = hints.map(h => `<li>${h}</li>`).join('');
+      document.getElementById('inputSection').style.display = 'none';
+      document.getElementById('introAndHints').style.display = 'grid';
+      document.getElementById('matrixContainer').innerHTML = html;
+    }
+
+    function toggleCell(cell) {
+      let state = cell.getAttribute('data-state');
+      if (state === '') {
+        cell.setAttribute('data-state', '1');
+        cell.textContent = '1';
+      } else if (state === '1') {
+        cell.setAttribute('data-state', '0');
+        cell.textContent = '0';
+      } else {
+        cell.setAttribute('data-state', '');
+        cell.textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
