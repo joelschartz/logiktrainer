@@ -2,19 +2,31 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Logiktrainer</title>
+  <title>Logiktrainer 4×5</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 2rem;
+      padding: 1rem 2rem 2rem 2rem;
       background: #f5f5f5;
       display: flex;
       justify-content: center;
     }
-
+      td.block-top {
+        border-top: 2px solid #ccc;
+      }
+      td.block-left {
+        border-left: 2px solid #ccc;
+      }
+      td.block-right {
+        border-right: 2px solid #ccc;
+      }
+      td.block-bottom {
+        border-bottom: 2px solid #ccc;
+      }
     .container {
       width: 90%;
+      margin-top: 0;
     }
 
     textarea {
@@ -36,19 +48,12 @@
       border-radius: 4px;
     }
 
-    #introAndHints {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  width: 100%;
-}
-
-    #introduction, #hints {
+    .box {
       background-color: white;
-      padding: 1rem 1.2rem;
+      padding: 0.25rem 1.2rem;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1rem;
     }
 
     #hints ul {
@@ -62,44 +67,60 @@
     table {
       border-collapse: collapse;
       background: white;
-      width: 100%;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      table-layout: auto;
+      width: auto;
+      max-width: 100%;
     }
 
-    th, td {
+    th {
+      border: 1px solid #ccc;
+      font-size: 13px;
+      padding: 0;
+      height: 30px;
+      font-weight: normal;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    td {
       border: 1px solid #ccc;
       padding: 0;
-      width: 60px;
-      height: 40px;
+      height: 30px;
       text-align: center;
       font-size: 13px;
     }
-th.rotated-left {
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  white-space: nowrap;
-  text-align: center;
-  vertical-align: middle;
-  padding: 0.3rem;
-  background-color: #e0e0e0;
-  font-size: 13px;
-  height: auto;
-}
+
+      th.rotated {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+        height: 100px;
+        width: 30px;
+        background-color: #f3f3f3;
+      }
+
+      th.rotated-left {
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+        background-color: #e0e0e0;
+        font-size: 13px;
+        height: 100px;
+        width: 30px;
+      }
 
 
-th.rotated {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  padding: 0.5rem;
-  white-space: nowrap;
-  height: 120px;
-  background-color: #f3f3f3;
-  font-size: 13px; /* Standardgröße beibehalten */
-}
 
     td[data-clickable] {
       cursor: pointer;
       background-color: #fff;
+      width: 30px;
+      aspect-ratio: 1 / 1;
     }
 
     td[data-clickable]:hover {
@@ -117,48 +138,69 @@ th.rotated {
     td[style*="border: none"] {
       background-color: #f5f5f5 !important;
     }
+      #layoutRow {
+          display: flex;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+
+        #matrixContainer, #hints {
+          flex: 1;
+          max-width: 50%;
+        }
+
+        #hints {
+          font-size: clamp(0.6rem, 1.5vw, 1rem);
+          min-width: 250px;
+          box-sizing: border-box;
+        }
   </style>
 </head>
 <body>
   <div class="container">
     <div id="inputSection">
       <h1>Logiktrainer</h1>
-      <p>Füge hier dein Rätsel ein (mit Einleitung, Hinweisen und Kategorien):</p>
-      <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...&#10;&#10;Hinweise:&#10;1. Hinweis...&#10;&#10;Kategorien:&#10;Kategorie;Element1,Element2,Element3"></textarea>
+      <p>Füge hier dein Rätsel ein (mit Einleitung, Hinweisen und 4 Kategorien mit je 5 Elementen):</p>
+      <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\n\nHinweise:\n1. Hinweis...\n\nKategorien:\nKategorie;Element1,Element2,Element3,Element4,Element5"></textarea>
       <button onclick="generateMatrix()">Rätsel erstellen</button>
     </div>
 
-    <div id="introAndHints" style="display: none;">
-      <div id="introduction"><h2>Einleitung</h2><p id="storyText"></p></div>
-      <div id="hints"><h2>Hinweise</h2><ul id="hintsList"></ul></div>
-    </div>
+    <div id="contentLayout" style="display: none;">
+      <div id="introduction" class="box">
+        <h2>Einleitung</h2>
+        <p id="storyText"></p>
+      </div>
 
-    <div id="matrixContainer"></div>
+      <div id="layoutRow">
+        <div id="matrixContainer"></div>
+        <div id="hints" class="box">
+          <h2>Hinweise</h2>
+          <ul id="hintsList"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     function generateMatrix() {
       const input = document.getElementById('csvInput').value.trim();
-
       const storyMatch = input.match(/Einleitungsgeschichte:\s*(.+?)\s*(Hinweise:|$)/s);
       const story = storyMatch ? storyMatch[1].trim() : '';
-
       const hintMatch = input.match(/Hinweise:\s*((?:\d+\..*?\n?)*)\s*Kategorien:/s);
       const hints = hintMatch ? hintMatch[1].trim().split(/\n+/).map(h => h.replace(/^\d+\.\s*/, '')) : [];
-
-      const categoryMatch = input.match(/Kategorien:\s*((?:.+\n?)+)/);
+      const categoryMatch = input.match(/Kategorien:\s*((?:.+\n?)*)/);
       const categoryLines = categoryMatch ? categoryMatch[1].trim().split('\n') : [];
 
-const data = categoryLines.map(line => {
-  const [category, elementsRaw] = line.split(';');
-  return {
-    category: category.trim(),
-    elements: elementsRaw.split(',').map(e => e.trim())
-  };
-});
+      const data = categoryLines.map(line => {
+        const [category, elementsRaw] = line.split(';');
+        return {
+          category: category.trim(),
+          elements: elementsRaw.split(',').map(e => e.trim())
+        };
+      });
 
-      if (data.length !== 4 || !data.every(d => d.elements.length === 3)) {
-        alert("Bitte genau 4 Kategorien mit je 3 Elementen eingeben.");
+      if (data.length !== 4 || !data.every(d => d.elements.length === 5)) {
+        alert("Bitte genau 4 Kategorien mit je 5 Elementen eingeben.");
         return;
       }
 
@@ -167,70 +209,78 @@ const data = categoryLines.map(line => {
       const colLabels = [...cat2.elements, ...cat3.elements, ...cat4.elements];
 
       let html = '<table><thead>';
-html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
+      html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
       [cat2.category, cat3.category, cat4.category].forEach(category => {
-        html += `<th colspan="3" style="background-color: #e0e0e0; font-weight: normal;">${category}</th>`;
+        html += `<th colspan="5" style="background-color: #e0e0e0; font-weight: normal;">${category}</th>`;
       });
       html += '</tr><tr>';
       colLabels.forEach(label => {
-        html += `<th class="rotated">${label}</th>`;
+        const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
+        html += `<th class="rotated" title="${label}">${shortLabel}</th>`;
       });
+
       html += '</tr></thead><tbody>';
 
+      const blockSize = 5;
+      const totalSize = 15;
+      const isBlockBorder = (index, size) => index % size === 0;
+
+      function getBlockClasses(row, col) {
+        const classes = [];
+        if (isBlockBorder(row, blockSize)) classes.push('block-top');
+        if (isBlockBorder(col, blockSize)) classes.push('block-left');
+        if ((row + 1) % blockSize === 0) classes.push('block-bottom');
+        if ((col + 1) % blockSize === 0) classes.push('block-right');
+        return classes.join(' ');
+      }
+
+      
       rowLabels.forEach((label, rowIndex) => {
-        if (rowIndex % 3 === 0) {
-          const groupName = [cat1.category, cat4.category, cat3.category][Math.floor(rowIndex / 3)];
-html += `<tr><th rowspan="3" class="rotated-left">${groupName}</th>`;
+        if (rowIndex % 5 === 0) {
+          const groupName = [cat1.category, cat4.category, cat3.category][Math.floor(rowIndex / 5)];
+          html += `<tr><th rowspan="5" class="rotated-left">${groupName}</th>`;
         } else {
           html += '<tr>';
         }
 
-        html += `<th style="background-color: #f3f3f3;">${label}</th>`;
-
+        const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
+        html += `<th style="background-color: #f3f3f3;" title="${label}">${shortLabel}</th>`;
         colLabels.forEach((_, colIndex) => {
           if (
-            (rowIndex >= 3 && rowIndex <= 5 && colIndex >= 6 && colIndex <= 8) ||
-            (rowIndex >= 6 && rowIndex <= 8 && colIndex >= 3 && colIndex <= 8)
+            (rowIndex >= 5 && rowIndex <= 9 && colIndex >= 10 && colIndex <= 14) ||
+            (rowIndex >= 10 && rowIndex <= 14 && colIndex >= 5 && colIndex <= 14)
           ) {
             html += '<td style="border: none; background-color: #f5f5f5;"></td>';
           } else {
-            const top = (rowIndex % 3 === 0) ? '3px' : '1px';
-            const left = (colIndex % 3 === 0) ? '3px' : '1px';
-            const right = (colIndex % 3 === 2) ? '3px' : '1px';
-            const bottom = (rowIndex % 3 === 2) ? '3px' : '1px';
-            html += `<td data-clickable data-state="" onclick="toggleCell(this)" style="
-              border-top: ${top} solid black;
-              border-left: ${left} solid black;
-              border-right: ${right} solid black;
-              border-bottom: ${bottom} solid black;
-              width: 30px; height: 40px;"></td>`;
+              const cellClass = getBlockClasses(rowIndex, colIndex);
+              html += `<td data-clickable data-state="" class="${cellClass}" onclick="toggleCell(this)"></td>`;
           }
         });
-
         html += '</tr>';
       });
 
       html += '</tbody></table>';
+
       document.getElementById('storyText').textContent = story;
       document.getElementById('hintsList').innerHTML = hints.map(h => `<li>${h}</li>`).join('');
       document.getElementById('inputSection').style.display = 'none';
-      document.getElementById('introAndHints').style.display = 'grid';
+      document.getElementById('contentLayout').style.display = 'block';
       document.getElementById('matrixContainer').innerHTML = html;
     }
 
-    function toggleCell(cell) {
-      let state = cell.getAttribute('data-state');
-      if (state === '') {
-        cell.setAttribute('data-state', '1');
-        cell.textContent = '1';
-      } else if (state === '1') {
-        cell.setAttribute('data-state', '0');
-        cell.textContent = '0';
-      } else {
-        cell.setAttribute('data-state', '');
-        cell.textContent = '';
+      function toggleCell(cell) {
+        let state = cell.getAttribute('data-state');
+        if (state === '') {
+          cell.setAttribute('data-state', '1');
+          cell.textContent = '+';
+        } else if (state === '1') {
+          cell.setAttribute('data-state', '0');
+          cell.textContent = '–';
+        } else {
+          cell.setAttribute('data-state', '');
+          cell.textContent = '';
+        }
       }
-    }
   </script>
 </body>
 </html>
