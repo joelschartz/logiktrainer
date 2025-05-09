@@ -1,322 +1,322 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <title>Logiktrainer 4×4 / 5×4</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 0;
-      padding: 1rem 2rem 2rem 2rem;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
-    }
-    td.block-top { border-top: 2px solid #ccc; }
-    td.block-left { border-left: 2px solid #ccc; }
-    td.block-right { border-right: 2px solid #ccc; }
-    td.block-bottom { border-bottom: 2px solid #ccc; }
-    .container { width: 90%; margin-top: 0; }
-    textarea {
-      width: 100%; height: 180px; margin-bottom: 1rem; padding: 1rem;
-      font-family: monospace; font-size: 0.9rem;
-    }
-    button {
-      padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
-      background-color: #0077cc; color: white; border: none; border-radius: 4px;
-    }
-    .box {
-      background-color: white; padding: 0.25rem 1.2rem; border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); margin-bottom: 1rem;
-    }
-    #hints ul { padding-left: 1.2rem; }
-    #hints li { margin-bottom: 0.5rem; }
-    table {
-      border-collapse: collapse; background: white;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-      table-layout: auto; width: auto; max-width: 100%;
-    }
-      th, td {
-        border: 1px solid #ccc;
-        padding: 0;
-        height: 30px;
-        text-align: center;
-        font-size: 13px;
-        font-weight: normal; /* <--- HIER hinzufügen */
-      }
-
-    th.rotated {
-      writing-mode: vertical-rl; transform: rotate(180deg);
-      white-space: nowrap; text-align: center; vertical-align: middle;
-      height: 100px; width: 30px; background-color: #f3f3f3;
-    }
-    th.rotated-left {
-      writing-mode: vertical-lr; transform: rotate(180deg);
-      white-space: nowrap; text-align: center; vertical-align: middle;
-      background-color: #e0e0e0; font-size: 13px; height: 100px; width: 30px;
-    }
-    td[data-clickable] {
-      cursor: pointer; background-color: #fff; width: 30px; aspect-ratio: 1 / 1;
-    }
-    td[data-clickable]:hover { background-color: #def; }
-    td[data-state="1"] { background-color: #8f8; }
-    td[data-state="0"] { background-color: #f88; }
-    td[style*="border: none"] { background-color: #f5f5f5 !important; }
-    #layoutRow {
-      display: flex; gap: 2rem; align-items: flex-start;
-    }
-    #matrixContainer, #hints {
-      flex: 1; max-width: 50%;
-    }
-    #hints {
-      font-size: clamp(0.6rem, 1.5vw, 1rem);
-      min-width: 250px; box-sizing: border-box;
-    }
-    .matrix-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      margin-top: 1rem;
-    }
-    .matrix-controls button {
-      margin-top: 0.5rem;
-      background-color: #cc0000;
-    }
-    .matrix-controls button:last-child {
-      background-color: #006400;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div id="inputSection">
-      <h1>Logiktrainer</h1>
-      <p>Füge hier dein Rätsel ein (mit Einleitung, Hinweisen und 4 Kategorien mit je 4 oder 5 Elementen):</p>
-      <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\n\nHinweise:\n1. Hinweis...\n\nKategorien:\nKategorie;Element1,Element2,Element3,Element4[,Element5]"></textarea>
-      <button onclick="generateMatrix()">Rätsel erstellen</button>
-    </div>
-
-    <div id="contentLayout" style="display: none;">
-      <div id="introduction" class="box">
-        <h2>Einleitung</h2>
-        <p id="storyText"></p>
-      </div>
-
-      <div id="layoutRow">
-        <div id="matrixContainer"></div>
-        <div id="hints" class="box">
-          <h2>Hinweise</h2>
-          <ul id="hintsList"></ul>
+    <head>
+        <meta charset="UTF-8">
+            <title>Logiktrainer 4×4 / 5×4</title>
+            <style>
+                body {
+                    font-family: system-ui, sans-serif;
+                    margin: 0;
+                    padding: 1rem 2rem 2rem 2rem;
+                    background: #f5f5f5;
+                    display: flex;
+                    justify-content: center;
+                }
+                td.block-top { border-top: 2px solid #ccc; }
+                td.block-left { border-left: 2px solid #ccc; }
+                td.block-right { border-right: 2px solid #ccc; }
+                td.block-bottom { border-bottom: 2px solid #ccc; }
+                .container { width: 90%; margin-top: 0; }
+                textarea {
+                    width: 100%; height: 180px; margin-bottom: 1rem; padding: 1rem;
+                    font-family: monospace; font-size: 0.9rem;
+                }
+                button {
+                    padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
+                    background-color: #0077cc; color: white; border: none; border-radius: 4px;
+                }
+                .box {
+                    background-color: white; padding: 0.25rem 1.2rem; border-radius: 6px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); margin-bottom: 1rem;
+                }
+                #hints ul { padding-left: 1.2rem; }
+                #hints li { margin-bottom: 0.5rem; }
+                table {
+                    border-collapse: collapse; background: white;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                    table-layout: auto; width: auto; max-width: 100%;
+                }
+                th, td {
+                    border: 1px solid #ccc;
+                    padding: 0;
+                    height: 30px;
+                    text-align: center;
+                    font-size: 13px;
+                    font-weight: normal; /* <--- HIER hinzufügen */
+                }
+                
+                th.rotated {
+                    writing-mode: vertical-rl; transform: rotate(180deg);
+                    white-space: nowrap; text-align: center; vertical-align: middle;
+                    height: 100px; width: 30px; background-color: #f3f3f3;
+                }
+                th.rotated-left {
+                    writing-mode: vertical-lr; transform: rotate(180deg);
+                    white-space: nowrap; text-align: center; vertical-align: middle;
+                    background-color: #e0e0e0; font-size: 13px; height: 100px; width: 30px;
+                }
+                td[data-clickable] {
+                    cursor: pointer; background-color: #fff; width: 30px; aspect-ratio: 1 / 1;
+                }
+                td[data-clickable]:hover { background-color: #def; }
+                td[data-state="1"] { background-color: #8f8; }
+                td[data-state="0"] { background-color: #f88; }
+                td[style*="border: none"] { background-color: #f5f5f5 !important; }
+                #layoutRow {
+                    display: flex; gap: 2rem; align-items: flex-start;
+                }
+                #matrixContainer, #hints {
+                    flex: 1; max-width: 50%;
+                }
+                #hints {
+                    font-size: clamp(0.6rem, 1.5vw, 1rem);
+                    min-width: 250px; box-sizing: border-box;
+                }
+                .matrix-controls {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    margin-top: 1rem;
+                }
+                .matrix-controls button {
+                    margin-top: 0.5rem;
+                    background-color: #cc0000;
+                }
+                .matrix-controls button:last-child {
+                    background-color: #006400;
+                }
+            </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="inputSection">
+                <h1>Logiktrainer</h1>
+                <p>Füge hier dein Rätsel ein (mit Einleitung, Hinweisen und 4 Kategorien mit je 4 oder 5 Elementen):</p>
+                <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\n\nHinweise:\n1. Hinweis...\n\nKategorien:\nKategorie;Element1,Element2,Element3,Element4[,Element5]"></textarea>
+                <button onclick="generateMatrix()">Rätsel erstellen</button>
+            </div>
+            
+            <div id="contentLayout" style="display: none;">
+                <div id="introduction" class="box">
+                    <h2>Einleitung</h2>
+                    <p id="storyText"></p>
+                </div>
+                
+                <div id="layoutRow">
+                    <div id="matrixContainer"></div>
+                    <div id="hints" class="box">
+                        <h2>Hinweise</h2>
+                        <ul id="hintsList"></ul>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function generateMatrix() {
-      const input = document.getElementById('csvInput').value.trim();
-      const storyMatch = input.match(/Einleitungsgeschichte:\s*(.+?)\s*(Hinweise:|$)/s);
-      const story = storyMatch ? storyMatch[1].trim() : '';
-      const hintMatch = input.match(/Hinweise:\s*((?:\d+\..*?\n?)*)\s*Kategorien:/s);
-      const hints = hintMatch ? hintMatch[1].trim().split(/\n+/).map(h => h.replace(/^\d+\.\s*/, '')) : [];
-      const categoryMatch = input.match(/Kategorien:\s*((?:.+\n?)*)/);
-      const categoryLines = categoryMatch ? categoryMatch[1].trim().split('\n') : [];
-
-      const data = categoryLines.map(line => {
-        const [category, elementsRaw] = line.split(';');
-        return {
-          category: category.trim(),
-          elements: elementsRaw.split(',').map(e => e.trim())
-        };
-      });
-
-      if (data.length !== 4 || ![4, 5].includes(data[0].elements.length) || !data.every(d => d.elements.length === data[0].elements.length)) {
-        alert("Bitte genau 4 Kategorien mit je 4 oder je 5 Elementen eingeben.");
-        return;
-      }
-
-      const elementCount = data[0].elements.length;
-      const blockSize = elementCount;
-      const totalSize = elementCount * 3;
-
-      const [cat1, cat2, cat3, cat4] = data;
-      const rowLabels = [...cat1.elements, ...cat4.elements, ...cat3.elements];
-      const colLabels = [...cat2.elements, ...cat3.elements, ...cat4.elements];
-
-      let html = '<table><thead>';
-      html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
-      [cat2.category, cat3.category, cat4.category].forEach(category => {
-        html += `<th colspan="${blockSize}" style="background-color: #e0e0e0; font-weight: normal;">${category}</th>`;
-      });
-      html += '</tr><tr>';
-      colLabels.forEach(label => {
-        const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
-        html += `<th class="rotated" title="${label}">${shortLabel}</th>`;
-      });
-      html += '</tr></thead><tbody>';
-
-      function isBlockBorder(index, size) {
-        return index % size === 0;
-      }
-
-      function getBlockClasses(row, col) {
-        const classes = [];
-        if (isBlockBorder(row, blockSize)) classes.push('block-top');
-        if (isBlockBorder(col, blockSize)) classes.push('block-left');
-        if ((row + 1) % blockSize === 0) classes.push('block-bottom');
-        if ((col + 1) % blockSize === 0) classes.push('block-right');
-        return classes.join(' ');
-      }
-
-      rowLabels.forEach((label, rowIndex) => {
-        if (rowIndex % blockSize === 0) {
-          const groupName = [cat1.category, cat4.category, cat3.category][Math.floor(rowIndex / blockSize)];
-          html += `<tr><th rowspan="${blockSize}" class="rotated-left">${groupName}</th>`;
-        } else {
-          html += '<tr>';
-        }
-
-        const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
-        html += `<th style="background-color: #f3f3f3;" title="${label}">${shortLabel}</th>`;
-        colLabels.forEach((_, colIndex) => {
-            const cellClass = getBlockClasses(rowIndex, colIndex);
-            const totalSize = blockSize * 3;
-
-            // Dynamische Platzierung der Buttons in den beiden letzten Zellen
-            if (rowIndex === totalSize - 2 && colIndex === totalSize - 1) {
-              html += `<td class="${cellClass}"><button onclick="resetMatrix()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✕</button></td>`;
-            } else if (rowIndex === totalSize - 1 && colIndex === totalSize - 1) {
-              html += `<td class="${cellClass}"><button onclick="showSolution()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✔</button></td>`;
-            } else if ((rowIndex >= blockSize && rowIndex < 2 * blockSize && colIndex >= 2 * blockSize && colIndex < 3 * blockSize) ||
-                       (rowIndex >= 2 * blockSize && rowIndex < 3 * blockSize && colIndex >= blockSize && colIndex < 3 * blockSize)) {
-              html += '<td style="border: none; background-color: #f5f5f5;"></td>';
-            } else {
-              html += `<td data-clickable data-state="" class="${cellClass}" onclick="toggleCell(this)"></td>`;
+        
+        <script>
+            function generateMatrix() {
+                const input = document.getElementById('csvInput').value.trim();
+                const storyMatch = input.match(/Einleitungsgeschichte:\s*(.+?)\s*(Hinweise:|$)/s);
+                const story = storyMatch ? storyMatch[1].trim() : '';
+                const hintMatch = input.match(/Hinweise:\s*((?:\d+\..*?\n?)*)\s*Kategorien:/s);
+                const hints = hintMatch ? hintMatch[1].trim().split(/\n+/).map(h => h.replace(/^\d+\.\s*/, '')) : [];
+                const categoryMatch = input.match(/Kategorien:\s*((?:.+\n?)*)/);
+                const categoryLines = categoryMatch ? categoryMatch[1].trim().split('\n') : [];
+                
+                const data = categoryLines.map(line => {
+                    const [category, elementsRaw] = line.split(';');
+                    return {
+                        category: category.trim(),
+                        elements: elementsRaw.split(',').map(e => e.trim())
+                    };
+                });
+                
+                if (data.length !== 4 || ![4, 5].includes(data[0].elements.length) || !data.every(d => d.elements.length === data[0].elements.length)) {
+                    alert("Bitte genau 4 Kategorien mit je 4 oder je 5 Elementen eingeben.");
+                    return;
+                }
+                
+                const elementCount = data[0].elements.length;
+                const blockSize = elementCount;
+                const totalSize = elementCount * 3;
+                
+                const [cat1, cat2, cat3, cat4] = data;
+                const rowLabels = [...cat1.elements, ...cat4.elements, ...cat3.elements];
+                const colLabels = [...cat2.elements, ...cat3.elements, ...cat4.elements];
+                
+                let html = '<table><thead>';
+                html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
+                [cat2.category, cat3.category, cat4.category].forEach(category => {
+                    html += `<th colspan="${blockSize}" style="background-color: #e0e0e0; font-weight: normal;">${category}</th>`;
+                });
+                html += '</tr><tr>';
+                colLabels.forEach(label => {
+                    const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
+                    html += `<th class="rotated" title="${label}">${shortLabel}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                function isBlockBorder(index, size) {
+                    return index % size === 0;
+                }
+                
+                function getBlockClasses(row, col) {
+                    const classes = [];
+                    if (isBlockBorder(row, blockSize)) classes.push('block-top');
+                    if (isBlockBorder(col, blockSize)) classes.push('block-left');
+                    if ((row + 1) % blockSize === 0) classes.push('block-bottom');
+                    if ((col + 1) % blockSize === 0) classes.push('block-right');
+                    return classes.join(' ');
+                }
+                
+                rowLabels.forEach((label, rowIndex) => {
+                    if (rowIndex % blockSize === 0) {
+                        const groupName = [cat1.category, cat4.category, cat3.category][Math.floor(rowIndex / blockSize)];
+                        html += `<tr><th rowspan="${blockSize}" class="rotated-left">${groupName}</th>`;
+                    } else {
+                        html += '<tr>';
+                    }
+                    
+                    const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
+                    html += `<th style="background-color: #f3f3f3;" title="${label}">${shortLabel}</th>`;
+                    colLabels.forEach((_, colIndex) => {
+                        const cellClass = getBlockClasses(rowIndex, colIndex);
+                        const totalSize = blockSize * 3;
+                        
+                        // Dynamische Platzierung der Buttons in den beiden letzten Zellen
+                        if (rowIndex === totalSize - 2 && colIndex === totalSize - 1) {
+                            html += `<td class="${cellClass}"><button onclick="resetMatrix()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✕</button></td>`;
+                        } else if (rowIndex === totalSize - 1 && colIndex === totalSize - 1) {
+                            html += `<td class="${cellClass}"><button onclick="showSolution()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✔</button></td>`;
+                        } else if ((rowIndex >= blockSize && rowIndex < 2 * blockSize && colIndex >= 2 * blockSize && colIndex < 3 * blockSize) ||
+                                   (rowIndex >= 2 * blockSize && rowIndex < 3 * blockSize && colIndex >= blockSize && colIndex < 3 * blockSize)) {
+                            html += '<td style="border: none; background-color: #f5f5f5;"></td>';
+                        } else {
+                            html += `<td data-clickable data-state="" class="${cellClass}" onclick="toggleCell(this)"></td>`;
+                        }
+                        
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                document.getElementById('storyText').textContent = story;
+                document.getElementById('hintsList').innerHTML = hints.map(h => `<li>${h}</li>`).join('');
+                document.getElementById('inputSection').style.display = 'none';
+                document.getElementById('contentLayout').style.display = 'block';
+                document.getElementById('matrixContainer').innerHTML = html;
             }
-
-        });
-        html += '</tr>';
-      });
-
-      html += '</tbody></table>';
-      document.getElementById('storyText').textContent = story;
-      document.getElementById('hintsList').innerHTML = hints.map(h => `<li>${h}</li>`).join('');
-      document.getElementById('inputSection').style.display = 'none';
-      document.getElementById('contentLayout').style.display = 'block';
-      document.getElementById('matrixContainer').innerHTML = html;
-    }
-
-    function toggleCell(cell) {
-      let state = cell.getAttribute('data-state');
-      if (state === '') {
-        cell.setAttribute('data-state', '1');
-        cell.textContent = '+';
-      } else if (state === '1') {
-        cell.setAttribute('data-state', '0');
-        cell.textContent = '–';
-      } else {
-        cell.setAttribute('data-state', '');
-        cell.textContent = '';
-      }
-    }
-
-    function resetMatrix() {
-      document.querySelectorAll('td[data-clickable]').forEach(cell => {
-        cell.setAttribute('data-state', '');
-        cell.textContent = '';
-      });
-    }
-      
-
-      function showSolution() {
-        const input = document.getElementById('csvInput').value;
-        const solutionMatch = input.match(/Lösung:\s*((?:[^]+))/);
-        if (!solutionMatch) {
-          alert("Keine Lösung gefunden (bitte Abschnitt mit 'Lösung:' einfügen).");
-          return;
-        }
-
-        const solutionLines = solutionMatch[1].trim().split('\n').filter(l => l.includes(';'));
-        if (solutionLines.length !== 4) {
-          alert("Die Lösung muss genau 4 Zeilen mit je 4 oder 5 Elementen enthalten.");
-          return;
-        }
-
-        const categories = [];
-        for (const line of solutionLines) {
-          const [cat, elems] = line.split(';');
-          if (!elems) {
-            alert(`Ungültige Zeile in Lösung: ${line}`);
-            return;
-          }
-          categories.push(elems.split(',').map(e => e.trim()));
-        }
-
-        const elementCount = categories[0].length;
-        if (!categories.every(c => c.length === elementCount)) {
-          alert("Alle Kategorien in der Lösung müssen gleich viele Elemente haben.");
-          return;
-        }
-
-        // Erzeuge Zuordnungs-Matrix
-        const matrix = {};
-        for (let i = 0; i < elementCount; i++) {
-          const combo = categories.map(cat => cat[i]);
-          for (let a = 0; a < combo.length; a++) {
-            for (let b = 0; b < combo.length; b++) {
-              if (a !== b) {
-                matrix[`${combo[a]}|${combo[b]}`] = true;
-              }
+            
+            function toggleCell(cell) {
+                let state = cell.getAttribute('data-state');
+                if (state === '') {
+                    cell.setAttribute('data-state', '1');
+                    cell.textContent = '+';
+                } else if (state === '1') {
+                    cell.setAttribute('data-state', '0');
+                    cell.textContent = '–';
+                } else {
+                    cell.setAttribute('data-state', '');
+                    cell.textContent = '';
+                }
             }
-          }
-        }
-
-        const rows = document.querySelectorAll('#matrixContainer table tbody tr');
-        if (rows.length === 0) {
-          alert("Matrix nicht gefunden. Bitte zuerst auf „Rätsel erstellen“ klicken.");
-          return;
-        }
-
-        const rowLabels = [];
-        const colLabels = [];
-
-        // Zeilen-Header
-        rows.forEach(row => {
-          const ths = row.querySelectorAll('th');
-          if (ths.length > 0) {
-            const label = ths[ths.length - 1];
-            const text = label.getAttribute('title') || label.textContent.trim();
-            rowLabels.push(text);
-          }
-        });
-
-        // Spalten-Header
-        const colThs = document.querySelectorAll('#matrixContainer table thead tr:nth-child(2) th');
-        colThs.forEach(th => {
-          const text = th.getAttribute('title') || th.textContent.trim();
-          if (text !== '') colLabels.push(text);
-        });
-
-        for (let r = 0; r < rowLabels.length; r++) {
-          const cells = rows[r].querySelectorAll('td');
-          for (let c = 0; c < colLabels.length; c++) {
-            const cell = cells[c];
-            if (cell && cell.hasAttribute('data-clickable')) {
-              const key = `${rowLabels[r]}|${colLabels[c]}`;
-              const reverseKey = `${colLabels[c]}|${rowLabels[r]}`;
-              if (matrix[key] || matrix[reverseKey]) {
-                cell.setAttribute('data-state', '1');
-                cell.textContent = '+';
-              } else {
-                cell.setAttribute('data-state', '0');
-                cell.textContent = '–';
-              }
+            
+            function resetMatrix() {
+                document.querySelectorAll('td[data-clickable]').forEach(cell => {
+                    cell.setAttribute('data-state', '');
+                    cell.textContent = '';
+                });
             }
-          }
-        }
-      }
-
-
-  </script>
-</body>
+            
+            
+            function showSolution() {
+                const input = document.getElementById('csvInput').value;
+                const solutionMatch = input.match(/Lösung:\s*((?:[^]+))/);
+                if (!solutionMatch) {
+                    alert("Keine Lösung gefunden (bitte Abschnitt mit 'Lösung:' einfügen).");
+                    return;
+                }
+                
+                const solutionLines = solutionMatch[1].trim().split('\n').filter(l => l.includes(';'));
+                if (solutionLines.length !== 4) {
+                    alert("Die Lösung muss genau 4 Zeilen mit je 4 oder 5 Elementen enthalten.");
+                    return;
+                }
+                
+                const categories = [];
+                for (const line of solutionLines) {
+                    const [cat, elems] = line.split(';');
+                    if (!elems) {
+                        alert(`Ungültige Zeile in Lösung: ${line}`);
+                        return;
+                    }
+                    categories.push(elems.split(',').map(e => e.trim()));
+                }
+                
+                const elementCount = categories[0].length;
+                if (!categories.every(c => c.length === elementCount)) {
+                    alert("Alle Kategorien in der Lösung müssen gleich viele Elemente haben.");
+                    return;
+                }
+                
+                // Erzeuge Zuordnungs-Matrix
+                const matrix = {};
+                for (let i = 0; i < elementCount; i++) {
+                    const combo = categories.map(cat => cat[i]);
+                    for (let a = 0; a < combo.length; a++) {
+                        for (let b = 0; b < combo.length; b++) {
+                            if (a !== b) {
+                                matrix[`${combo[a]}|${combo[b]}`] = true;
+                            }
+                        }
+                    }
+                }
+                
+                const rows = document.querySelectorAll('#matrixContainer table tbody tr');
+                if (rows.length === 0) {
+                    alert("Matrix nicht gefunden. Bitte zuerst auf „Rätsel erstellen“ klicken.");
+                    return;
+                }
+                
+                const rowLabels = [];
+                const colLabels = [];
+                
+                // Zeilen-Header
+                rows.forEach(row => {
+                    const ths = row.querySelectorAll('th');
+                    if (ths.length > 0) {
+                        const label = ths[ths.length - 1];
+                        const text = label.getAttribute('title') || label.textContent.trim();
+                        rowLabels.push(text);
+                    }
+                });
+                
+                // Spalten-Header
+                const colThs = document.querySelectorAll('#matrixContainer table thead tr:nth-child(2) th');
+                colThs.forEach(th => {
+                    const text = th.getAttribute('title') || th.textContent.trim();
+                    if (text !== '') colLabels.push(text);
+                });
+                
+                for (let r = 0; r < rowLabels.length; r++) {
+                    const cells = rows[r].querySelectorAll('td');
+                    for (let c = 0; c < colLabels.length; c++) {
+                        const cell = cells[c];
+                        if (cell && cell.hasAttribute('data-clickable')) {
+                            const key = `${rowLabels[r]}|${colLabels[c]}`;
+                            const reverseKey = `${colLabels[c]}|${rowLabels[r]}`;
+                            if (matrix[key] || matrix[reverseKey]) {
+                                cell.setAttribute('data-state', '1');
+                                cell.textContent = '+';
+                            } else {
+                                cell.setAttribute('data-state', '0');
+                                cell.textContent = '–';
+                            }
+                        }
+                    }
+                }
+            }
+            
+            
+        </script>
+    </body>
 </html>
