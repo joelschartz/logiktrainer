@@ -2,179 +2,404 @@
 <html lang="de">
     <head>
         <meta charset="UTF-8">
-            <title>Logiktrainer 4×4 / 5×4</title>
-            <style>
-                body {
-                    font-family: system-ui, sans-serif;
-                    margin: 0;
-                    padding: 1rem 2rem 2rem 2rem;
-                    background: #f5f5f5;
-                    display: flex;
-                    justify-content: center;
+        <title>Logiktrainer 3×3 / 4×4 / 5×5</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 0;
+                padding: 1rem 1rem 2rem 1rem;
+                background: #f5f5f5;
+            }
+
+            
+            .container {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+            }
+
+            td.cell {
+                font-size: 15px;
+                text-align: center;
+                vertical-align: middle;
+                line-height: 32px; /* exakt gleiche Höhe wie die Zelle */
+            }
+
+            textarea {
+                width: 100%;
+                height: 180px;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                font-family: monospace;
+                font-size: 0.9rem;
+            }
+            
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+                cursor: pointer;
+                background-color: #0077cc;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                box-shadow: none;      /* Schatten entfernt */
+            }
+
+
+            .box {
+                background-color: white;
+                padding: 0.25rem 1.2rem;
+                border-radius: 6px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                margin-bottom: 1rem;
+            }
+            
+            #hints ul {
+                padding-left: 1.2rem;
+            }
+            
+            #hints li {
+                margin-bottom: 0.5rem;
+            }
+            
+            table {
+                border-collapse: collapse;
+                background: white;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                margin: 0 0 1rem 0; /* linksbündig */
+                min-width: max-content;
+            }
+            
+            th, td {
+                border: 1px solid #ccc;
+                text-align: center;
+                font-size: 13px;
+                font-weight: normal;
+            }
+            
+            /* Square cells */
+            td.cell {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                max-width: 32px;
+                min-height: 32px;
+                max-height: 32px;
+                box-sizing: border-box;
+                vertical-align: middle;
+                cursor: pointer;
+                background-color: #fff;
+                padding: 0;
+                overflow: hidden;
+            }
+            
+            /* Größere Zellen für 5x5 Rätsel */
+            @media (min-width: 1400px) {
+                td.cell {
+                    width: 35px;
+                    height: 35px;
+                    min-width: 35px;
+                    max-width: 35px;
+                    min-height: 35px;
+                    max-height: 35px;
                 }
-                td.block-top { border-top: 2px solid #ccc; }
-                td.block-left { border-left: 2px solid #ccc; }
-                td.block-right { border-right: 2px solid #ccc; }
-                td.block-bottom { border-bottom: 2px solid #ccc; }
-                .container { width: 90%; margin-top: 0; }
-                textarea {
-                    width: 100%; height: 180px; margin-bottom: 1rem; padding: 1rem;
-                    font-family: monospace; font-size: 0.9rem;
-                }
-                button {
-                    padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
-                    background-color: #0077cc; color: white; border: none; border-radius: 4px;
-                }
-                .box {
-                    background-color: white; padding: 0.25rem 1.2rem; border-radius: 6px;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); margin-bottom: 1rem;
-                }
-                #hints ul { padding-left: 1.2rem; }
-                #hints li { margin-bottom: 0.5rem; }
-                table {
-                    table-layout: fixed;
-                    width: auto;
-                    max-width: 100%;
-                    border-collapse: collapse;
-                    background: white;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            }
+            
+            /* Normal header cells */
+            th.header {
+                padding: 0 6px;
+                white-space: nowrap;
+                height: 30px;
+                background-color: #f3f3f3;
+            }
+            
+            /* Category headers */
+            th.category {
+                background-color: #e0e0e0;
+                font-weight: normal;
+                padding: 5px;
+            }
+            
+            /* Empty corner cells */
+            th.empty-corner {
+                border: none;
+                background-color: #f5f5f5;
+            }
+            
+            /* Vertical rotated headers */
+            th.rotated {
+                height: 120px;
+                width: 30px;
+                position: relative;
+                background-color: #f3f3f3;
+                padding: 0;
+            }
+            
+            th.rotated > div {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-90deg);
+                width: 120px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+            
+            /* Left side rotated headers */
+            th.rotated-left {
+                height: 120px;
+                width: 30px;
+                background-color: #e0e0e0;
+                position: relative;
+                padding: 0;
+            }
+            
+            th.rotated-left > div {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-90deg);
+                width: 120px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+            
+            /* Cell hover effect */
+            td.cell:hover {
+                background-color: #def;
+            }
+            
+            /* Cell states */
+            td[data-state="1"] {
+                background-color: #8f8;
+            }
+            
+            td[data-state="0"] {
+                background-color: #f88;
+            }
+            
+            /* Empty cells */
+            td.empty {
+                background-color: #f5f5f5 !important;
+                border: none;
+            }
+            
+            /* Block borders */
+            td.block-top {
+                border-top: 2px solid #999;
+            }
+            
+            td.block-left {
+                border-left: 2px solid #999;
+            }
+            
+            td.block-right {
+                border-right: 2px solid #999;
+            }
+            
+            td.block-bottom {
+                border-bottom: 2px solid #999;
+            }
+            
+            /* Layout */
+            #layoutRow {
+                display: inline-flex;
+                align-items: flex-start;
+            }
+
+            #matrixContainer {
+                display: inline-block;
+            }
+
+            #hints {
+                display: inline-block;
+                vertical-align: top;
+                margin-left: 3rem; /* Abstand vergrößert */
+            }
+
+
+            #puzzleContent {
+                display: flex;
+                justify-content: center;
+            }
+            
+            
+            #puzzleContainer {
+                display: inline-block;
+            }
+
+
+            #introAndPuzzle {
+                display: inline-block;
+            }
+
+            
+            #layoutWrapper {
+                display: inline-block;
+            }
+
+            #combinedBox {
+                display: inline-block;
+                width: fit-content;
+                max-width: 100%;
+            }
+
+
+
+            #puzzleBox {
+                display: inline-block;
+                max-width: 100%;
+            }
+
+            
+            #introduction {
+                margin-bottom: 1rem;
+                width: auto;
+                display: inline-block;
+            }
+
+
+
+
+            
+            /* Responsive layout for small screens */
+            @media (max-width: 1200px) {
+                #matrixContainer {
+                    min-width: 100%;
                 }
                 
-                th:not(.rotated):not(.rotated-left) {
-                    padding: 0 6px; /* oder 0 8px für mehr Abstand */
-                    background-color: #f3f3f3;
-                    white-space: nowrap;
-                }
-
-                th {
-                    border: 1px solid #ccc;
-                    padding: 0;
-                    height: 30px;
-                    text-align: center;
-                    font-size: 13px;
-                    font-weight: normal;
-                }
-
-                td {
-                    border: 1px solid #ccc;
-                    padding: 0;
-                    text-align: center;
-                    font-size: 13px;
-                    font-weight: normal;
-                    /* ACHTUNG: keine height-Angabe! */
-                }
-
-                
-                th.rotated {
-                    height: 8em; /* flexibel, aber konstant */
-                    width: 30px;
-                    padding: 0;
-                    background-color: #f3f3f3;
-                    text-align: center;
-                    vertical-align: middle;
-                    position: relative;
-                }
-
-                th.rotated > div {
-                    transform: translate(-50%, -50%) rotate(-90deg); /* nur eine Rotation */
-                    transform-origin: center center;
-                    white-space: nowrap;
-                    display: block;
-                    width: 120px; /* angepasst an vertikalen Platz */
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    font-size: 13px;
-                }
-
-
-                th.rotated-left {
-                    height: 8em; /* gleiche Höhe wie oben */
-                    width: 30px;
-                    padding: 0;
-                    background-color: #e0e0e0;
-                    text-align: center;
-                    vertical-align: middle;
-                    position: relative;
-                }
-
-                th.rotated-left > div {
-                    transform: translate(-50%, -50%) rotate(-90deg); /* ebenfalls nur eine Rotation */
-                    transform-origin: center center;
-                    white-space: nowrap;
-                    display: block;
-                    width: 120px;
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    font-size: 13px;
-                }
-
-                td[data-clickable] {
-                    vertical-align: middle;
-                    cursor: pointer;
-                    background-color: #fff;
-                    width: 30px;
-                    aspect-ratio: 1 / 1;
-                }
-                td[data-clickable]:hover { background-color: #def; }
-                td[data-state="1"] { background-color: #8f8; }
-                td[data-state="0"] { background-color: #f88; }
-                td[style*="border: none"] { background-color: #f5f5f5 !important; }
-                #layoutRow {
-                    display: flex; gap: 2rem; align-items: flex-start;
-                }
-                #matrixContainer, #hints {
-                    flex: 1; max-width: 50%;
-                }
                 #hints {
-                    font-size: clamp(0.6rem, 1.5vw, 1rem);
-                    min-width: 250px; box-sizing: border-box;
+                    flex: 0 0 auto;
+                    min-width: 250px;
+                    max-width: none;
+                    margin-left: 0;
                 }
-                .matrix-controls {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
+
+            }
+            
+            /* Control buttons in cells */
+            .control-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 18px;
+                width: 100%;
+                height: 100%;
+                background: none;
+                border: none;
+                outline: none;
+                box-shadow: none;
+                appearance: none;
+                padding: 0;
+                margin: 0;
+                cursor: pointer;
+            }
+
+
+            * NEU hinzugefügt */
+            .puzzleBox {
+                display: inline-block;
+                max-width: 100%;
+            }
+            #puzzleContent {
+                display: flex;
+                justify-content: center;
+            }
+
+            .centerWrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+
+            .introductionBox {
+                width: auto;
+                display: inline-block;
+            }
+            
+            @media print {
+                body {
+                    background: white;
+                }
+
+                /* Layout untereinander im Druckmodus */
+                #puzzleContent {
+                    display: block;
+                }
+
+                #layoutRow {
+                    display: block;
+                    margin-top: 1.5rem;
+                }
+
+                #matrixContainer {
+                    display: block;
+                    margin-bottom: 2rem;
+                }
+
+                #hints {
+                    display: block;
+                    margin-left: 0;
                     margin-top: 1rem;
+                    max-width: 100%;
+                    page-break-inside: avoid;
                 }
-                .matrix-controls button {
-                    margin-top: 0.5rem;
-                    background-color: #cc0000;
+
+                #inputSection,
+                button {
+                    display: none;
                 }
-                .matrix-controls button:last-child {
-                    background-color: #006400;
+
+                table {
+                    zoom: 0.9;
+                    margin: 0 auto 1rem auto;
                 }
-            </style>
+            }
+
+        </style>
     </head>
     <body>
         <div class="container">
             <div id="inputSection">
                 <h1>Logiktrainer</h1>
                 <p>Füge hier dein Rätsel ein – mit Einleitung, Hinweisen und 3-5 Kategorien mit je 3-5 Elementen, z.B. 3x3, 4x5, 5x5):</p>
-                <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\nHinweise:\n1. ...\n2. ...\n\nKategorien:\nKat1;A,B,C\nKat2;X,Y,Z\n\nLösung:\nKat1;B,C,A\nKat2;Y,Z,X
-"></textarea>
+                <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\nHinweise:\n1. ...\n2. ...\n\nKategorien:\nKat1;A,B,C\nKat2;X,Y,Z\n\nLösung:\nKat1;B,C,A\nKat2;Y,Z,X"></textarea>
                 <button onclick="generateMatrix()">Rätsel erstellen</button>
             </div>
             
             <div id="contentLayout" style="display: none;">
-                <div id="introduction" class="box">
-                    <h2>Einleitung</h2>
-                    <p id="storyText"></p>
-                </div>
-                
-                <div id="layoutRow">
-                    <div id="matrixContainer"></div>
-                    <div id="hints" class="box">
-                        <h2>Hinweise</h2>
-                        <ul id="hintsList"></ul>
+                <div id="puzzleContent">
+                    <div class="centerWrapper">
+                        <div id="introduction" class="box">
+                            <h2>Einleitung</h2>
+                            <p id="storyText"></p>
+                        </div>
+                        <div id="layoutRow">
+                            <div id="matrixContainer"></div>
+                            <div id="hints" class="box">
+                                <h2>Hinweise</h2>
+                                <ul id="hintsList"></ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+
+
+
             </div>
+
+
+
         </div>
         
         <script>
-        // Erweiterter Logiktrainer inklusive showSolution()
-
+        // Improved Logiktrainer with consistent square cells
+        
         function generateMatrix() {
             const input = document.getElementById('csvInput').value.trim();
             const storyMatch = input.match(/Einleitungsgeschichte:\s*(.+?)\s*(Hinweise:|$)/s);
@@ -203,7 +428,7 @@
 
             if (!validConfigs.some(([cats, elems]) => cats === numCategories && elems === elementCount) ||
                 !data.every(d => d.elements.length === elementCount)) {
-                alert("Ungültige Kombination. Erlaubt sind:\n3, 4 oder 5 Kategorien mit je 3, 4 oder 5 Elementen");
+                alert("Ungültige Kombination. Erlaubt sind:\n- 3, 4 oder 5 Kategorien mit je 3, 4 oder 5 Elementen");
                 return;
             }
 
@@ -224,17 +449,25 @@
                 colLabels.push(...data[1].elements, ...data[2].elements, ...data[3].elements, ...data[4].elements);
             }
 
-            let html = '<table><thead>';
-            html += '<tr><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th><th rowspan="2" style="border: none; background-color: #f5f5f5;"></th>';
+            let html = '<table>';
+            
+            // Table header - first row with category labels
+            html += '<thead><tr><th class="empty-corner"></th><th class="empty-corner"></th>';
             for (let i = 1; i < numCategories; i++) {
-                html += `<th colspan="${blockSize}" style="background-color: #e0e0e0; font-weight: normal;">${data[i].category}</th>`;
+                html += `<th colspan="${blockSize}" class="category">${data[i].category}</th>`;
             }
-            html += '</tr><tr>';
+            html += '</tr>';
+            
+            // Table header - second row with column labels
+            html += '<tr><th class="empty-corner"></th><th class="empty-corner"></th>';
             colLabels.forEach(label => {
                 const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
                 html += `<th class="rotated" title="${label}"><div>${shortLabel}</div></th>`;
             });
-            html += '</tr></thead><tbody>';
+            html += '</tr></thead>';
+            
+            // Table body
+            html += '<tbody>';
 
             function isBlockBorder(index, size) {
                 return index % size === 0;
@@ -267,7 +500,7 @@
                 }
 
                 const shortLabel = label.length > 13 ? label.slice(0, 12) + '.' : label;
-                html += `<th style="background-color: #f3f3f3;" title="${label}">${shortLabel}</th>`;
+                html += `<th class="header" title="${label}">${shortLabel}</th>`;
 
                 colLabels.forEach((_, colIndex) => {
                     const cellClass = getBlockClasses(rowIndex, colIndex);
@@ -283,13 +516,13 @@
                         ));
 
                     if (rowIndex === totalSize - 2 && colIndex === totalSize - 1) {
-                        html += `<td class="${cellClass}"><button onclick="resetMatrix()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✕</button></td>`;
+                        html += `<td class="cell ${cellClass}" data-type="reset" onclick="resetMatrix()"><div class="control-button">✕</div></td>`;
                     } else if (rowIndex === totalSize - 1 && colIndex === totalSize - 1) {
-                        html += `<td class="${cellClass}"><button onclick="showSolution()" style="all: unset; width: 100%; height: 100%; cursor: pointer;">✔</button></td>`;
+                        html += `<td class="cell ${cellClass}" data-type="solution" onclick="showSolution()"><div class="control-button">✓</div></td>`;
                     } else if (isGreyCell) {
-                        html += '<td style="border: none; background-color: #f5f5f5;"></td>';
+                        html += `<td class="empty"></td>`;
                     } else {
-                        html += `<td data-clickable data-state="" class="${cellClass}" onclick="toggleCell(this)"></td>`;
+                        html += `<td class="cell ${cellClass}" data-state="" onclick="toggleCell(this)"></td>`;
                     }
                 });
 
@@ -302,11 +535,19 @@
             document.getElementById('inputSection').style.display = 'none';
             document.getElementById('contentLayout').style.display = 'block';
             document.getElementById('matrixContainer').innerHTML = html;
+            
+            // Prüfen ob es ein 5x5 Rätsel ist und die Klasse entsprechend setzen
+            if (numCategories === 5 || elementCount === 5) {
+                document.getElementById('matrixContainer').classList.add('large-puzzle');
+            } else {
+                document.getElementById('matrixContainer').classList.remove('large-puzzle');
+            }
         }
 
-
-
         function toggleCell(cell) {
+            // Skip control button cells
+            if (cell.hasAttribute('data-type')) return;
+            
             let state = cell.getAttribute('data-state');
             if (state === '') {
                 cell.setAttribute('data-state', '1');
@@ -321,7 +562,7 @@
         }
 
         function resetMatrix() {
-            document.querySelectorAll('td[data-clickable]').forEach(cell => {
+            document.querySelectorAll('td.cell:not([data-type])').forEach(cell => {
                 cell.setAttribute('data-state', '');
                 cell.textContent = '';
             });
@@ -386,13 +627,15 @@
                 if (text !== '') colLabels.push(text);
             });
 
-            for (let r = 0; r < rowLabels.length; r++) {
-                const cells = rows[r].querySelectorAll('td');
-                for (let c = 0; c < colLabels.length; c++) {
-                    const cell = cells[c];
-                    if (cell && cell.hasAttribute('data-clickable')) {
-                        const key = `${rowLabels[r]}|${colLabels[c]}`;
-                        const reverseKey = `${colLabels[c]}|${rowLabels[r]}`;
+            rows.forEach((row, rowIndex) => {
+                if (rowIndex >= rowLabels.length) return;
+                
+                const cells = row.querySelectorAll('td.cell:not([data-type])');
+                cells.forEach((cell, cellIndex) => {
+                    if (cellIndex < colLabels.length) {
+                        const key = `${rowLabels[rowIndex]}|${colLabels[cellIndex]}`;
+                        const reverseKey = `${colLabels[cellIndex]}|${rowLabels[rowIndex]}`;
+                        
                         if (matrix[key] || matrix[reverseKey]) {
                             cell.setAttribute('data-state', '1');
                             cell.textContent = '+';
@@ -401,10 +644,9 @@
                             cell.textContent = '–';
                         }
                     }
-                }
-            }
+                });
+            });
         }
         </script>
-
     </body>
 </html>
