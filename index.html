@@ -2,7 +2,7 @@
 <html lang="de">
     <head>
         <meta charset="UTF-8">
-        <title>Logiktrainer 3×3 / 4×4 / 5×5</title>
+        <title>Logiktrainer</title>
         <style>
             body {
                 font-family: system-ui, sans-serif;
@@ -10,19 +10,11 @@
                 padding: 1rem 1rem 2rem 1rem;
                 background: #f5f5f5;
             }
-
             
             .container {
-                width: 100%;
-                max-width: none;
-                margin: 0;
-            }
-
-            td.cell {
-                font-size: 15px;
-                text-align: center;
-                vertical-align: middle;
-                line-height: 32px; /* exakt gleiche Höhe wie die Zelle */
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
 
             textarea {
@@ -42,9 +34,8 @@
                 color: white;
                 border: none;
                 border-radius: 4px;
-                box-shadow: none;      /* Schatten entfernt */
+                box-shadow: none;
             }
-
 
             .box {
                 background-color: white;
@@ -66,7 +57,7 @@
                 border-collapse: collapse;
                 background: white;
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-                margin: 0 0 1rem 0; /* linksbündig */
+                margin: 0 0 1rem 0;
                 min-width: max-content;
             }
             
@@ -117,9 +108,20 @@
             th.category {
                 background-color: #e0e0e0;
                 font-weight: normal;
-                padding: 5px;
+                padding: 4px;
+                text-align: center;
             }
-            
+
+            /* Neu: Ellipsis für Kategorie-Labels oben */
+            th.category .category-label {
+                display: inline-block;
+                max-width: 120px;            /* je nach Breite anpassen */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                vertical-align: bottom;
+            }
+
             /* Empty corner cells */
             th.empty-corner {
                 border: none;
@@ -128,23 +130,31 @@
             
             /* Vertical rotated headers */
             th.rotated {
-                height: 120px;
+                height: 96px;
                 width: 30px;
-                position: relative;
                 background-color: #f3f3f3;
+                position: relative;
                 padding: 0;
+                overflow: hidden;
+                vertical-align: bottom; /* näher am Zellrahmen */
             }
+
+
             
             th.rotated > div {
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%) rotate(-90deg);
-                width: 120px;
+                max-width: 100px;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;
+                display: block;
+                padding: 2px 0; /* vertikales Padding fast entfernt */
+                line-height: 1.1;
             }
+
             
             /* Left side rotated headers */
             th.rotated-left {
@@ -202,83 +212,38 @@
             td.block-bottom {
                 border-bottom: 2px solid #999;
             }
-            
-            /* Layout */
+
+            /* Modified Layout */
             #layoutRow {
-                display: inline-flex;
+                display: flex;
+                flex-wrap: wrap;
                 align-items: flex-start;
+                justify-content: center;
+                gap: 1rem; /* Abstand zwischen Matrix und Hinweisen */
             }
 
             #matrixContainer {
-                display: inline-block;
+                flex: 0 1 auto;
             }
 
             #hints {
-                display: inline-block;
-                vertical-align: top;
-                margin-left: 3rem; /* Abstand vergrößert */
+                flex: 0 1 auto;
+                max-width: 400px; /* Maximale Breite der Hinweise */
+                min-width: 250px;
             }
-
 
             #puzzleContent {
                 display: flex;
-                justify-content: center;
-            }
-            
-            
-            #puzzleContainer {
-                display: inline-block;
+                flex-direction: column;
+                align-items: center;
             }
 
-
-            #introAndPuzzle {
-                display: inline-block;
-            }
-
-            
-            #layoutWrapper {
-                display: inline-block;
-            }
-
-            #combinedBox {
-                display: inline-block;
-                width: fit-content;
-                max-width: 100%;
-            }
-
-
-
-            #puzzleBox {
-                display: inline-block;
-                max-width: 100%;
-            }
-
-            
+            /* Introduction box - now narrower */
             #introduction {
                 margin-bottom: 1rem;
-                width: auto;
-                display: inline-block;
+                width: 90;
             }
 
-
-
-
-            
-            /* Responsive layout for small screens */
-            @media (max-width: 1200px) {
-                #matrixContainer {
-                    min-width: 100%;
-                }
-                
-                #hints {
-                    flex: 0 0 auto;
-                    min-width: 250px;
-                    max-width: none;
-                    margin-left: 0;
-                }
-
-            }
-            
             /* Control buttons in cells */
             .control-button {
                 display: flex;
@@ -296,29 +261,6 @@
                 padding: 0;
                 margin: 0;
                 cursor: pointer;
-            }
-
-
-            * NEU hinzugefügt */
-            .puzzleBox {
-                display: inline-block;
-                max-width: 100%;
-            }
-            #puzzleContent {
-                display: flex;
-                justify-content: center;
-            }
-
-            .centerWrapper {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-
-            .introductionBox {
-                width: auto;
-                display: inline-block;
             }
             
             @media print {
@@ -359,7 +301,6 @@
                     margin: 0 auto 1rem auto;
                 }
             }
-
         </style>
     </head>
     <body>
@@ -367,34 +308,38 @@
             <div id="inputSection">
                 <h1>Logiktrainer</h1>
                 <p>Füge hier dein Rätsel ein – mit Einleitung, Hinweisen und 3-5 Kategorien mit je 3-5 Elementen, z.B. 3x3, 4x5, 5x5):</p>
-                <textarea id="csvInput" placeholder="Einleitungsgeschichte: ...\nHinweise:\n1. ...\n2. ...\n\nKategorien:\nKat1;A,B,C\nKat2;X,Y,Z\n\nLösung:\nKat1;B,C,A\nKat2;Y,Z,X"></textarea>
+                <textarea id="csvInput" placeholder="Einleitungsgeschichte: 
+... 
+
+Hinweise: 
+1. ... 
+2. ... 
+
+Kategorien: 
+Kat1;A,B,C 
+Kat2;X,Y,Z 
+
+Lösung: 
+Kat1;B,C,A 
+Kat2;Y,Z,X"></textarea>
                 <button onclick="generateMatrix()">Rätsel erstellen</button>
             </div>
             
             <div id="contentLayout" style="display: none;">
                 <div id="puzzleContent">
-                    <div class="centerWrapper">
-                        <div id="introduction" class="box">
-                            <h2>Einleitung</h2>
-                            <p id="storyText"></p>
-                        </div>
-                        <div id="layoutRow">
-                            <div id="matrixContainer"></div>
-                            <div id="hints" class="box">
-                                <h2>Hinweise</h2>
-                                <ul id="hintsList"></ul>
-                            </div>
+                    <div id="introduction" class="box">
+                        <h2>Einleitung</h2>
+                        <p id="storyText"></p>
+                    </div>
+                    <div id="layoutRow">
+                        <div id="matrixContainer"></div>
+                        <div id="hints" class="box">
+                            <h2>Hinweise</h2>
+                            <ul id="hintsList"></ul>
                         </div>
                     </div>
                 </div>
-
-
-
-
             </div>
-
-
-
         </div>
         
         <script>
@@ -454,7 +399,9 @@
             // Table header - first row with category labels
             html += '<thead><tr><th class="empty-corner"></th><th class="empty-corner"></th>';
             for (let i = 1; i < numCategories; i++) {
-                html += `<th colspan="${blockSize}" class="category">${data[i].category}</th>`;
+                const catLabel = data[i].category;
+                html += `<th colspan="${blockSize}" class="category" title="${catLabel}"><div class="category-label">${catLabel}</div></th>`;
+
             }
             html += '</tr>';
             
